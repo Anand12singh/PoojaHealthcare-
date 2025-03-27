@@ -15,7 +15,6 @@ import PatientDocument from "../../db/models/patient_docs.js";
 import fs from "fs";
 import { extname } from "path";
 import moment from "moment";
-// import DocumentTypes from "../../db/models/document_types.js";
 
 import jwt from "jsonwebtoken";
 
@@ -334,10 +333,79 @@ const storepatient = async (req, res) => {
   }
 };
 
+const getPatientById = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const patient = await Patient.findOne({
+      where: { id },
+      include: [
+        {
+          model: PatientVisit,
+          as: "patient_visits",
+          required: false,
+        },
+        {
+          model: PatientDocument,
+          as: "patient_documents",
+          required: false,
+        },
+      ],
+    });
+
+    if (!patient) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Patient not found" });
+    }
+
+    res.json({ status: true, patient });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ status: false, message: "Server error", error: error.message });
+  }
+};
+
+const getAllPatients = async (req, res) => {
+  try {
+    const patients = await Patient.findAll({
+      include: [
+        {
+          model: PatientVisit,
+          as: "patient_visits",
+          required: false,
+        },
+        {
+          model: PatientDocument,
+          as: "patient_documents",
+          required: false,
+        },
+      ],
+    });
+
+    res.json({
+      status: true,
+      message: "Patients fetched successfully",
+      patients,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 export {
   addLocation,
   getAllLocations,
   addDocumentType,
   getAllDocumentTypes,
   storepatient,
+  getPatientById,
+  getAllPatients,
 };
