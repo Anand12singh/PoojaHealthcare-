@@ -26,10 +26,6 @@ const patient_docs = sequelize.define(
     media_path: {
       type: DataTypes.STRING,
     },
-    doctor_note: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
     status: {
       type: DataTypes.ENUM("0", "1"),
       defaultValue: "1",
