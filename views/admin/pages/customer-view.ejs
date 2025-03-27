@@ -1,0 +1,214 @@
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+</style>
+<!--
+Payment History
+Courses Complted
+plans
+-->
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_toolbar" class="app-toolbar  py-3 py-lg-6 ">
+        <div id="kt_app_toolbar_container" class="app-container  container-xxl d-flex flex-stack ">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3 ">
+                <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
+                    Account Overview
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="/admin/dashboard" class="text-muted text-hover-primary">
+                            Home </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-500 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">
+                        Customer </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="kt_app_content" class="app-content  flex-column-fluid ">
+        <div id="kt_app_content_container" class="app-container  container-xxl ">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-body pt-9 pb-0">
+                    <div class="d-flex flex-wrap flex-sm-nowrap">
+                        <div class="me-7 mb-4">
+                            <div class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative">
+                                <img src="/media/avatars/blank.png" alt="image">
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
+                                <div class="d-flex flex-column">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <a href="javascript:void(0)" class="text-gray-900 text-hover-primary fs-2 fw-bold me-1"><%= (customer) ? customer.first_name + ' ' + customer.last_name : '' %>                                        </a>
+                                    </div>
+                                    <input type="hidden" id="customer_id" value="<%= (customer) ? customer.id : '' %>">
+                                    <div class="d-flex flex-wrap fw-semibold fs-6 mb-4 pe-2">
+                                        <a href="javascript:void(0)"
+                                            class="d-flex align-items-center text-gray-500 text-hover-primary me-5 mb-2">
+                                            <i class="ki-duotone ki-phone fs-4 me-1"><span
+                                                    class="path1"></span><span class="path2"></span></i> <%= (customer) ? customer.phone_no : '' %>
+                                        </a>
+                                        <a href="javascript:void(0)"
+                                            class="d-flex align-items-center text-gray-500 text-hover-primary mb-2">
+                                            <i class="ki-duotone ki-sms fs-4"><span class="path1"></span><span
+                                                    class="path2"></span></i> <%= (customer) ? customer.email : '' %>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold">
+                        <li class="nav-item mt-2">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5 active" data-src='0' data-value="overview"
+                            data-bs-toggle="tab" href="#Overview" >
+                                Overview </a>
+                        </li>
+                        <li class="nav-item mt-2">
+                            <a class="nav-link text-active-primary ms-0 me-10 py-5 " data-src='0'  data-value="logs"
+                            data-bs-toggle="tab" href="#logs" >
+                                Logs </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="Overview" role="tabpanel">
+                    <div class="card mb-5 mb-xl-10">
+                        <div class="card-header cursor-pointer">
+                            <div class="card-title m-0">
+                                <h3 class="fw-bold m-0">Profile Details</h3>
+                            </div>
+                        </div>
+                        <div class="card-body p-9">
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Full Name</label>
+                                <div class="col-lg-8">
+                                    <span class="fw-bold fs-6 text-gray-800" id="full_name"></span>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Email</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="fw-semibold text-gray-800 fs-6" id="email"></span>
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Contact Phone</label>
+                                    <div class="col-lg-8 fv-row">
+                                        <span class="fw-semibold text-gray-800 fs-6" id="phone_no"></span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Status</label>
+                                <div class="col-lg-8" id="status">
+                                </div>
+                            </div>
+                            <div class="row mb-7">
+                                <label class="col-lg-4 fw-semibold text-muted">Country</label>
+                                <div class="col-lg-8 fv-row">
+                                    <span class="fw-semibold text-gray-800 fs-6" id="country"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade " id="settings" role="tabpanel">
+                    <div class="card mb-5 mb-xl-10">
+                        <div class="card-header border-0 cursor-pointer" role="button" data-bs-toggle="collapse" data-bs-target="#kt_account_profile_details" aria-expanded="true" aria-controls="kt_account_profile_details">
+                            <div class="card-title m-0">
+                                <h3 class="fw-bold m-0">Profile Details</h3>
+                            </div>
+                        </div>
+                        <div id="kt_account_settings_profile_details" class="collapse show">
+                            <form id="kt_account_profile_details_form" class="form fv-plugins-bootstrap5 fv-plugins-framework" novalidate="novalidate">
+                                <div class="card-body border-top p-9">
+                                    <div class="row mb-6">
+                                        <label class="col-lg-4 col-form-label fw-semibold fs-6">Avatar</label>
+                                        <div class="col-lg-8">
+                                            <div class="image-input image-input-outline" data-kt-image-input="true" style="background-image: url('/media/svg/avatars/blank.svg')">
+                                                <div class="image-input-wrapper w-125px h-125px" style="background-image: url(/media/avatars/blank.png)"></div>
+                                            </div>
+                                            <div class="form-text">Allowed file types:  png, jpg, jpeg.</div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-6">
+                                        <label class="col-lg-4 col-form-label required fw-semibold fs-6">Full Name</label>
+                                        <div class="col-lg-8">
+                                            <div class="row">
+                                                <div class="col-lg-6 fv-row fv-plugins-icon-container">
+                                                    <input type="text" name="fname" id="fname" class="form-control form-control-lg form-control-solid mb-3 mb-lg-0" placeholder="First name" value="">
+                                                <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div></div>
+                                                <div class="col-lg-6 fv-row fv-plugins-icon-container">
+                                                    <input type="text" name="lname" id="lname" class="form-control form-control-lg form-control-solid" placeholder="Last name" value="">
+                                                <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-6">
+                                        <label class="col-lg-4 col-form-label required fw-semibold fs-6">Email</label>
+                                        <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                            <input type="text" name="email" id="emailId" class="form-control form-control-lg form-control-solid" placeholder="Company name" value="">
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div></div>
+                                    </div>
+                                    <div class="row mb-6">
+                                        <label class="col-lg-4 col-form-label fw-semibold fs-6">
+                                            <span class="required">Contact Phone</span>
+                                            <span class="ms-1" data-bs-toggle="tooltip" aria-label="Phone number must be active" data-bs-original-title="Phone number must be active" data-kt-initialized="1">
+                                                <i class="ki-duotone ki-information-5 text-gray-500 fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i></span>                    </label>
+                                        <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                            <input type="tel" name="phone" id="mobile_no" class="form-control form-control-lg form-control-solid" placeholder="Phone number" value="">
+                                        <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div></div>
+                                    </div>
+                                </div>
+                                <div class="row mb-6">
+                                    <label class="col-lg-4 col-form-label required fw-semibold fs-6">Country</label>
+                                    <div class="col-lg-8 fv-row fv-plugins-icon-container">
+                                        <input type="text" name="country_name" id="country_name" class="form-control form-control-lg form-control-solid" placeholder="Country name" value="">
+                                    <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div></div>
+                                </div>
+                            <input type="hidden"></form>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade " id="logs" role="tabpanel">
+                    <div class="card mb-5 mb-lg-10">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <h3>Login Sessions</h3>
+                            </div>
+                            <div class="card-toolbar">
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table align-middle table-row-bordered table-row-solid gy-4 gs-9">
+                                    <thead class="border-gray-200 fs-5 fw-semibold bg-lighten">
+                                        <tr>
+                                            <th class="min-w-150px">Device</th>
+                                            <th class="min-w-150px">IP Address</th>
+                                            <th class="min-w-150px">Login Time</th>
+                                            <th class="min-w-150px">Logout Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="fw-6 fw-semibold text-gray-600" id="login_session">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%- pageJs = `
+<script src="/plugins/custom/datatables/datatables.bundle.js"></script>
+<script src="/js/pages/customer_view.js"></script>
+` %>
+<%- pageJs %>

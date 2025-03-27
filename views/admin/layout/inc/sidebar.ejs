@@ -1,0 +1,358 @@
+<div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
+  <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
+    <a href="/admin/dashboard">
+      <img alt="Logo" src="/media/logos/ft_logo.png" class="h-35px app-sidebar-logo-default" />
+      <img alt="Logo" src="/media/logos/favicon.png" class="h-20px app-sidebar-logo-minimize" />
+    </a>
+    <div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate active" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
+      <i class="ki-duotone ki-black-left-line fs-3 rotate-180">
+        <span class="path1"></span>
+        <span class="path2"></span>
+      </i>
+    </div>
+  </div>
+  <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
+    <div id="kt_app_sidebar_menu_wrapper" class="app-sidebar-wrapper">
+      <div id="kt_app_sidebar_menu_scroll" class="scroll-y my-5 mx-3" data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer" data-kt-scroll-wrappers="#kt_app_sidebar_menu" data-kt-scroll-offset="5px" data-kt-scroll-save-state="true">
+        <div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6" id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false">
+
+          <div class="menu-item">
+            <a class="menu-link" href="/admin/dashboard">
+              <span class="menu-icon">
+                <i class="fa-solid fa-chart-line fs-2"></i>
+              </span>
+              <span class="menu-title">Dashboard</span>
+            </a>
+          </div>
+
+          <%
+                    const Masters = JSON.stringify(access_routes.routes).includes('categories') ||
+                    JSON.stringify(access_routes.routes).includes('masters')
+                    || JSON.stringify(access_routes.routes).includes('course-list')
+                     || JSON.stringify(access_routes.routes).includes('plans-list')
+                    || JSON.stringify(access_routes.routes).includes('plan-devices');
+                  %>
+          <% if (Masters) { %>
+          <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+            <span class="menu-link">
+              <span class="menu-icon">
+                <i class="bi bi-boxes fs-2"></i>
+              </span>
+              <span class="menu-title">Masters</span>
+              <span class="menu-arrow"></span>
+            </span>
+            <div class="menu-sub menu-sub-accordion">
+              <% if (JSON.stringify(access_routes.routes).includes('categories')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/categories">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Categories</span>
+                </a>
+              </div>
+              <% } %>
+              <% if (JSON.stringify(access_routes.routes).includes('masters')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/masters">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Masters (Teachers)</span>
+                </a>
+              </div>
+              <% } %>
+
+
+              <% if (JSON.stringify(access_routes.routes).includes('tags')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/tags">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Tags</span>
+                </a>
+              </div>
+              <% } %>
+              <% if (JSON.stringify(access_routes.routes).includes('course-list')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/course-list">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Courses</span>
+                </a>
+              </div>
+              <% } %>
+
+
+              <% if (JSON.stringify(access_routes.routes).includes('plans-list')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/plans-list">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Plans</span>
+                </a>
+              </div>
+              <% } %>
+              <% if (JSON.stringify(access_routes.routes).includes('plan-devices')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/plan-devices">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Plan Devices</span>
+                </a>
+              </div>
+              <% } %>
+
+            </div>
+          </div>
+          <% } %>
+
+
+
+
+          <%
+                    const CMS = JSON.stringify(access_routes.routes).includes('faqs') ||
+                    JSON.stringify(access_routes.routes).includes('testimonials')
+                    || JSON.stringify(access_routes.routes).includes('blogs')
+                    || JSON.stringify(access_routes.routes).includes('banners')
+                    || JSON.stringify(access_routes.routes).includes('landing_carousel')
+                    || JSON.stringify(access_routes.routes).includes('craftschool-services')
+                    ;
+                  %>
+          <% if (CMS) { %>
+          <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+            <span class="menu-link">
+              <span class="menu-icon">
+                <i class="bi bi-people fs-2"></i>
+              </span>
+              <span class="menu-title">CMS</span>
+              <span class="menu-arrow"></span>
+            </span>
+            <div class="menu-sub menu-sub-accordion">
+
+              <% if (JSON.stringify(access_routes.routes).includes('landing_carousel')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/landing_carousel">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Landing Carousel</span>
+                </a>
+              </div>
+              <% } %>
+
+              <% if (JSON.stringify(access_routes.routes).includes('banners')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/banners">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Banners</span>
+                </a>
+              </div>
+              <% } %>
+
+              <% if (JSON.stringify(access_routes.routes).includes('craftschool-services')) { %>
+                <div class="menu-item">
+                  <a class="menu-link" href="/admin/craftschool-services">
+                    <span class="menu-bullet">
+                      <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title">Craftschool services</span>
+                  </a>
+                </div>
+                <% } %>
+
+              <% if (JSON.stringify(access_routes.routes).includes('faqs')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/faqs">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">FAQ</span>
+                </a>
+              </div>
+              <% } %>
+              <% if (JSON.stringify(access_routes.routes).includes('testimonials')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/testimonials">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Testimonials</span>
+                </a>
+              </div>
+              <% } %>
+
+
+
+              <% if (JSON.stringify(access_routes.routes).includes('blogs')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/blogs">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Blogs</span>
+                </a>
+              </div>
+              <% } %>
+
+              <% if (JSON.stringify(access_routes.routes).includes('news_letter')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/news_letter">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">News Letter</span>
+                </a>
+              </div>
+              <% } %>
+
+              <% if (JSON.stringify(access_routes.routes).includes('contact_us')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/contact_us">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Contact Us</span>
+                </a>
+              </div>
+              <% } %>
+
+            </div>
+          </div>
+          <% } %>
+
+          <%
+            const CustomerManagement = JSON.stringify(access_routes.routes).includes('customers') ;
+          %>
+          <% if (CustomerManagement) { %>
+
+          <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+            <span class="menu-link">
+              <span class="menu-icon">
+                <i class="bi bi-person-circle"></i>
+              </span>
+              <span class="menu-title">Customer Management</span>
+              <span class="menu-arrow"></span>
+            </span>
+            <div class="menu-sub menu-sub-accordion">
+              <% if (JSON.stringify(access_routes.routes).includes('customers')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/customers">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Customers List</span>
+                </a>
+              </div>
+              <% } %>
+            </div>
+          </div>
+          <% } %>
+
+           
+
+	<%
+                const Community = JSON.stringify(access_routes.routes).includes('community_posts');
+            %>
+            <% if (Community) { %>
+            <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+                <span class="menu-link">
+                    <span class="menu-icon">
+                        <i class="fa-solid fa-people-group fs-2"></i>
+                    </span>
+                    <span class="menu-title">Community Management</span>
+                    <span class="menu-arrow"></span>
+                </span>
+                <div class="menu-sub menu-sub-accordion">
+                    <% if (JSON.stringify(access_routes.routes).includes('community_posts')) { %>
+                        <div class="menu-item">
+                            <a class="menu-link" href="/admin/community_posts">
+                                <span class="menu-icon">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">Community</span>
+                            </a>
+                        </div>
+                    <% } %>
+                    <% if (JSON.stringify(access_routes.routes).includes('post_reports')) { %>
+                        <div class="menu-item">
+                            <a class="menu-link" href="/admin/post_reports">
+                                <span class="menu-icon">
+                                    <span class="bullet bullet-dot"></span>
+                                </span>
+                                <span class="menu-title">Post Reports</span>
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+            <% } %>
+
+
+          <%
+            const UserManagement = JSON.stringify(access_routes.routes).includes('users')
+            || JSON.stringify(access_routes.routes).includes('roles')
+            || JSON.stringify(access_routes.routes).includes('permissions')
+            ;
+            %>
+          <% if (UserManagement) { %>
+
+          <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+            <span class="menu-link">
+              <span class="menu-icon">
+                <i class="bi bi-people fs-2"></i>
+              </span>
+              <span class="menu-title">User Management</span>
+              <span class="menu-arrow"></span>
+            </span>
+            <div class="menu-sub menu-sub-accordion">
+              <% if (JSON.stringify(access_routes.routes).includes('users')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/users">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Users</span>
+                </a>
+              </div>
+              <% } %>
+              <% if (JSON.stringify(access_routes.routes).includes('roles')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/roles">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Roles</span>
+                </a>
+              </div>
+              <% } %>
+              <% if (JSON.stringify(access_routes.routes).includes('permissions')) { %>
+              <div class="menu-item">
+                <a class="menu-link" href="/admin/permissions">
+                  <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                  </span>
+                  <span class="menu-title">Permissions</span>
+                </a>
+              </div>
+              <% } %>
+
+            </div>
+          </div>
+          <% } %>
+
+
+
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
