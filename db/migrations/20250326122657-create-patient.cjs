@@ -20,6 +20,8 @@ module.exports = {
       date: { type: Sequelize.DATE },
       referral_by: { type: Sequelize.STRING },
       location: { type: Sequelize.INTEGER },
+      doctor_note: { type: Sequelize.TEXT },
+      doctor_note_image: { type: Sequelize.STRING },
       status: {
         type: Sequelize.ENUM("0", "1"), // Enum for status
         defaultValue: "1", // Default status to '1'

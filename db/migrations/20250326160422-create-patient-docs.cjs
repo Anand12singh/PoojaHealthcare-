@@ -18,9 +18,6 @@ module.exports = {
       doc_type_id: {
         type: Sequelize.INTEGER,
       },
-      doc_type: {
-        type: Sequelize.STRING,
-      },
       media_path: {
         type: Sequelize.STRING,
       },

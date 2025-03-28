@@ -15,9 +15,10 @@ import PatientDocument from "../../db/models/patient_docs.js";
 import fs from "fs";
 import { extname } from "path";
 import moment from "moment";
+// import DocumentTypes from "../../db/models/document_types.js";
 
 import jwt from "jsonwebtoken";
-
+const BASE_URL = process.env.BASE_URL || "http://localhost:3847";
 const addLocation = async (req, res) => {
   try {
     const { location } = req.body;
@@ -134,7 +135,6 @@ const getAllDocumentTypes = async (req, res) => {
 };
 
 //post patient data
-
 async function generatePHID() {
   const lastPatient = await Patient.findOne({ order: [["id", "DESC"]] });
 
@@ -146,19 +146,9 @@ async function generatePHID() {
   return newPHID;
 }
 
-const documentFolders = {
-  "Blood Test Report": "blood_reports",
-  "X-Ray Report": "xray",
-  ECG: "ecg",
-  Ctscan: "ctscan",
-  Echocardio: "echocardio",
-  "Doctore Notes image": "doctor_notes",
-};
-
 const checkpatientinfo = async (req, res) => {
   try {
     const { first_name, last_name, mobile_no } = req.body;
-    phid = await generatePHID();
 
     const ispatientExist = await Patient.findOne({
       where: { first_name, last_name, mobile_no },
@@ -167,16 +157,25 @@ const checkpatientinfo = async (req, res) => {
     if (ispatientExist) {
       res.status(200).send({
         status: true,
-        patientExist: 2,
         message: "Patient already Exist",
-        data: ispatientExist,
+        data: [
+          {
+            patientExist: 2,
+            patient_id: ispatientExist.id,
+          },
+        ],
       });
     } else {
+      const newphid = await generatePHID();
       res.status(200).send({
         status: true,
-        patientExist: 1,
         message: "Patient Create successfully",
-        data: ispatientExist,
+        data: [
+          {
+            patientExist: 1,
+            phid: newphid,
+          },
+        ],
       });
     }
   } catch (error) {
@@ -196,17 +195,20 @@ const storepatient = async (req, res) => {
       date,
       referral_by,
       location,
-      timestamp,
       age,
       height,
       weight,
       bmi,
       rbs,
       chief_complaints,
-      dm,
-      dm_since,
-      hypertension,
-      htn_since,
+      history_of_dm_status,
+      history_of_dm_description,
+      hypertension_status,
+      hypertension_description,
+      IHD_status,
+      IHD_description,
+      COPD_status,
+      COPD_description,
       any_other_illness,
       past_surgical_history,
       drug_allergy,
@@ -216,35 +218,36 @@ const storepatient = async (req, res) => {
       bp_diastolic,
       pallor,
       icterus,
-      oedema,
-      oedema_text,
+      oedema_status,
+      oedema_description,
       lymphadenopathy,
-      present_medication,
-      rs,
-      cvs,
-      cns,
-      pa,
-      pa_image,
-      pr,
-      pr_image1,
-      pr_image2,
+      HO_present_medication,
+      respiratory_system,
+      cardio_vascular_system,
+      central_nervous_system,
+      pa_abdomen,
+      pr_rectum,
+      doctor_note,
       local_examination,
       clinical_diagnosis,
       comorbidities,
       plan,
       advise,
+      patientId,
+      status,
     } = req.body;
     const files = req.files;
 
     // Check if patient exists
     let patient = await Patient.findOne({ where: { mobile_no } });
     let phid;
-    if (!patient) {
+    //check status is 1 means store patient data and 2 means update patient data
+    if (status == 1) {
       phid = await generatePHID();
       patient = await Patient.create({
         phid,
-        first_name,
-        last_name,
+        first_name: first_name.toLowerCase(),
+        last_name: last_name.toLowerCase(),
         gender,
         mobile_no,
         alternative_no,
@@ -252,25 +255,58 @@ const storepatient = async (req, res) => {
         date,
         referral_by,
         location,
+        doctor_note,
       });
     } else {
-      phid = patient.phid;
+      patient = await Patient.update(
+        {
+          first_name: first_name.toLowerCase(),
+          last_name: last_name.toLowerCase(),
+          gender: gender,
+          mobile_no: mobile_no,
+          alternative_no: alternative_no,
+          address: address,
+          date: date,
+          referral_by: referral_by,
+          location: location,
+          doctor_note: doctor_note,
+        },
+        { where: { id: patientId } }
+      );
     }
-    const timestamp1 = moment(timestamp).format("YYYY-MM-DD HH:mm:ssZ");
+    let result = "added";
+    if (status == 2) {
+      result = "update";
+      //update pervoius patient visit info - status set as 2 and new records update as status 1
+      const updatePatientVisit = await db.query(
+        `update patient_visits SET status =$1 where  patient_id = $2`,
+        ["0", patientId]
+      );
+      //also update patient_docs table - patient pervious image status set as 2
+      const updatePatientDocs = await db.query(
+        `update patient_docs SET status = $1 where  patient_id = $2`,
+        ["0", patientId]
+      );
+    }
+    //const timestamp1 = moment(timestamp).format("YYYY-MM-DD HH:mm:ssZ");
     // Store new visit
     const newVisit = await PatientVisit.create({
-      patient_id: patient.id,
-      timestamp: timestamp1,
+      patient_id: status == 1 ? patient.id : patientId,
+      //timestamp: timestamp1,
       age,
       height,
       weight,
       bmi,
       rbs,
       chief_complaints,
-      dm,
-      dm_since,
-      hypertension,
-      htn_since,
+      history_of_dm_status,
+      history_of_dm_description,
+      hypertension_status,
+      hypertension_description,
+      IHD_status,
+      IHD_description,
+      COPD_status,
+      COPD_description,
       any_other_illness,
       past_surgical_history,
       drug_allergy,
@@ -280,18 +316,16 @@ const storepatient = async (req, res) => {
       bp_diastolic,
       pallor,
       icterus,
-      oedema,
-      oedema_text,
       lymphadenopathy,
-      present_medication,
-      rs,
-      cvs,
-      cns,
-      pa,
-      pa_image,
-      pr,
-      pr_image1,
-      pr_image2,
+      oedema_status,
+      oedema_description,
+      lymphadenopathy,
+      HO_present_medication,
+      respiratory_system,
+      cardio_vascular_system,
+      central_nervous_system,
+      pa_abdomen,
+      pr_rectum,
       local_examination,
       clinical_diagnosis,
       comorbidities,
@@ -306,6 +340,10 @@ const storepatient = async (req, res) => {
       ct_scan_report: 4,
       echocardiagram_report: 5,
       misc_report: 6,
+      pr_image: 7,
+      pa_abdomen_image: 8,
+      pr_rectum_image: 9,
+      doctor_note_image: 10,
     };
 
     //file store
@@ -314,8 +352,9 @@ const storepatient = async (req, res) => {
         for (const file of fileArray) {
           const mediaPath = file.path.replace(/\\/g, "/");
           const query = `INSERT INTO patient_docs (patient_id, visit_id, doc_type_id, media_path) VALUES ($1, $2, $3, $4)`;
+          const checknewOroldpatientId = status == 1 ? patient.id : patientId;
           await db.query(query, [
-            patient.id,
+            checknewOroldpatientId,
             newVisit.id,
             docTypes[key],
             mediaPath,
@@ -326,7 +365,9 @@ const storepatient = async (req, res) => {
 
     res.json({
       status: true,
-      message: "Patient, first visit, and documents added successfully",
+
+      message: `Patient, first visit, and documents ${result} successfully`,
+
       // patient,
       // visit: newVisit,
     });
@@ -340,29 +381,67 @@ const getPatientById = async (req, res) => {
   try {
     const { id } = req.body;
 
-    const patient = await Patient.findOne({
-      where: { id },
-      include: [
-        {
-          model: PatientVisit,
-          as: "patient_visits",
-          required: false,
-        },
-        {
-          model: PatientDocument,
-          as: "patient_documents",
-          required: false,
-        },
-      ],
-    });
+    const patientInfo = await db.query(
+      `select id,phid,first_name,last_name,gender,mobile_no,alternative_no,description,address,date,referral_by,
+      location,doctor_note from patients where id = $1 and status = $2`,
+      [1, "1"]
+    );
+    let PatientVisitInfo;
+    let PatientDocumentInfo;
+    if (patientInfo.rowCount > 0) {
+      PatientVisitInfo = await db.query(
+        `select id,patient_id,age,height,weight,rbi,bmi,rbs,chief_complaints,history_of_dm_status,history_of_dm_description,hypertension_status,
+        hypertension_description,"IHD_status","IHD_description","COPD_status","COPD_description",any_other_illness,past_surgical_history,
+        drug_allergy,temp,pulse,bp_systolic,bp_diastolic,pallor,icterus,oedema_status,oedema_description,lymphadenopathy,"HO_present_medication",
+        respiratory_system,cardio_vascular_system,central_nervous_system,pa_abdomen,pa_abdomen_image,pr_rectum,
+        pr_rectum_image,local_examination,clinical_diagnosis,comorbidities,plan,advise from patient_visits where patient_id = $1 and status = $2`,
+        [patientInfo.rows[0].id, "1"]
+      );
+      PatientDocumentInfo = await db.query(
+        `select id,patient_id,visit_id,doc_type_id,media_path from patient_docs where patient_id = $1 and status = $2`,
+        [patientInfo.rows[0].id, "1"]
+      );
+    }
 
-    if (!patient) {
+    let groupedDocuments;
+    if (PatientDocumentInfo.rowCount > 0) {
+      // Map document data with media URLs
+      const documentData = PatientDocumentInfo.rows.map((doc) => ({
+        id: doc.id,
+        patient_id: doc.patient_id,
+        visit_id: doc.visit_id,
+        doc_type_id: doc.doc_type_id,
+        media_url: `${BASE_URL}/${doc.media_path.replace("public/", "")}`,
+      }));
+
+      groupedDocuments = documentData.reduce((result, doc) => {
+        if (!result[doc.doc_type_id]) {
+          result[doc.doc_type_id] = [];
+        }
+        result[doc.doc_type_id].push(doc);
+        return result;
+      }, {});
+    } else {
+      groupedDocuments = [];
+    }
+
+    if (patientInfo.rowCount == 0) {
       return res
         .status(404)
         .json({ status: false, message: "Patient not found" });
     }
 
-    res.json({ status: true, patient });
+    res.json({
+      status: true,
+      message: "Patient  found",
+      data: [
+        {
+          patient: patientInfo.rows,
+          PatientVisitInfo: PatientVisitInfo ? PatientVisitInfo.rows : [],
+          PatientDocumentInfo: groupedDocuments,
+        },
+      ],
+    });
   } catch (error) {
     console.error(error);
     res
@@ -373,25 +452,31 @@ const getPatientById = async (req, res) => {
 
 const getAllPatients = async (req, res) => {
   try {
-    const patients = await Patient.findAll({
-      include: [
-        {
-          model: PatientVisit,
-          as: "patient_visits",
-          required: false,
-        },
-        {
-          model: PatientDocument,
-          as: "patient_documents",
-          required: false,
-        },
-      ],
-    });
+    // const patients = await Patient.findAll({
+    //   include: [
+    //     {
+    //       model: PatientVisit,
+    //       as: "patient_visits",
+    //       required: false,
+    //       attributes: ["age"],
+    //     },
+    //     // {
+    //     //   model: PatientDocument,
+    //     //   as: "patient_documents",
+    //     //   required: false,
+    //     // },
+    //   ],
+    // });
+
+    const patients = await db.query(
+      "select p.id,p.first_name,p.last_name,p.gender,p.mobile_no,p.date,pv.age from patients as p LEFT JOIN patient_visits as pv ON pv.patient_id=p.id where p.status=$1 AND pv.status=$2 order by p.id desc",
+      ["1", "1"]
+    );
 
     res.json({
       status: true,
       message: "Patients fetched successfully",
-      patients,
+      data: patients.rowCount > 0 ? patients.rows : [],
     });
   } catch (error) {
     console.error(error);

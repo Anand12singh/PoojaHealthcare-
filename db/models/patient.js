@@ -50,7 +50,6 @@ const Patient = sequelize.define(
     modelName: "patient",
   }
 );
-
 Patient.hasMany(PatientVisit, {
   foreignKey: "patient_id",
   as: "patient_visits",

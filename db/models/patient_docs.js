@@ -20,9 +20,6 @@ const patient_docs = sequelize.define(
       type: DataTypes.INTEGER,
     },
 
-    doc_type: {
-      type: DataTypes.STRING,
-    },
     media_path: {
       type: DataTypes.STRING,
     },

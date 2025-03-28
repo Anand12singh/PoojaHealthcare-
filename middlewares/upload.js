@@ -18,6 +18,7 @@ const file_storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let documentType = req.body.document_type || "others";
     documentType = documentType.toLowerCase();
+
     const uploadPath = uploadBasePath + (folderMap[documentType] || "others");
 
     if (!existsSync(uploadPath)) {
@@ -32,11 +33,10 @@ const file_storage = multer.diskStorage({
     const formattedDate = moment().format("YYYYMMDD");
     const fileExtension = extname(file.originalname) || ".unknown";
     const serialNumber = Math.floor(1000 + Math.random() * 9000);
+
     const filename = `${phid}_${formattedDate}_${serialNumber}${fileExtension}`;
     cb(null, filename);
   },
 });
 
-const upload = multer({ storage: file_storage });
-
-export { upload };
+export { file_storage };
