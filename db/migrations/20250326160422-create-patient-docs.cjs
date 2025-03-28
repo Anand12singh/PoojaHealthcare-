@@ -18,16 +18,11 @@ module.exports = {
       doc_type_id: {
         type: Sequelize.INTEGER,
       },
-
       doc_type: {
         type: Sequelize.STRING,
       },
       media_path: {
         type: Sequelize.STRING,
-      },
-      doctor_note: {
-        type: Sequelize.TEXT,
-        allowNull: true,
       },
       status: {
         type: Sequelize.ENUM("0", "1"), // Enum for status
@@ -45,7 +40,6 @@ module.exports = {
         defaultValue: Sequelize.fn("NOW"),
       },
       deleted_at: {
-        allowNull: false,
         type: Sequelize.DATE,
       },
       created_by: {
@@ -61,6 +55,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("document_types");
+    await queryInterface.dropTable("patient_docs");
   },
 };

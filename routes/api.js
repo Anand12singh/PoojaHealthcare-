@@ -14,7 +14,6 @@ const router = Router();
 const patient_visitsimage = diskStorage({
   destination: function (req, file, cb) {
     let uploadPath;
-    console.log("fiile", file.fieldname);
 
     if (file.fieldname === "pa_image") {
       uploadPath = "./public/uploads/p_a_abdomen";
@@ -23,6 +22,18 @@ const patient_visitsimage = diskStorage({
       file.fieldname === "pr_image2"
     ) {
       uploadPath = "./public/uploads/pr_image";
+    } else if (file.fieldname === "blood_report") {
+      uploadPath = "./public/uploads/blood_report";
+    } else if (file.fieldname === "xray_report") {
+      uploadPath = "./public/uploads/xray_report";
+    } else if (file.fieldname === "ct_scan_report") {
+      uploadPath = "./public/uploads/ct_scan_report";
+    } else if (file.fieldname === "ecg_report") {
+      uploadPath = "./public/uploads/ecg_report";
+    } else if (file.fieldname === "echocardiagram_report") {
+      uploadPath = "./public/uploads/echocardiagram_report";
+    } else if (file.fieldname === "misc_report") {
+      uploadPath = "./public/uploads/misc_report";
     } else {
       return cb(new Error("Invalid fieldname"), null);
     }
@@ -48,14 +59,20 @@ router.post("/addlocation", patientController.addLocation);
 router.get("/getlocation", patientController.getAllLocations);
 router.get("/getAllDocumentTypes", patientController.getAllDocumentTypes);
 router.get("/get_allpatients", patientController.getAllPatients);
+router.post("/checkpatientinfo", patientController.checkpatientinfo);
 
 router.post(
   "/storepatient",
-  upload.fields([
-    { name: "documents", maxCount: 10 },
+  patient_visitsimageupload.fields([
     { name: "pa_image", maxCount: 1 },
     { name: "pr_image1", maxCount: 1 },
     { name: "pr_image2", maxCount: 1 },
+    { name: "blood_report", maxCount: 20 },
+    { name: "xray_report", maxCount: 20 },
+    { name: "ct_scan_report", maxCount: 20 },
+    { name: "ecg_report", maxCount: 20 },
+    { name: "echocardiagram_report", maxCount: 20 },
+    { name: "misc_report", maxCount: 20 },
   ]),
   patientController.storepatient
 );

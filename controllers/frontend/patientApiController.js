@@ -155,6 +155,35 @@ const documentFolders = {
   "Doctore Notes image": "doctor_notes",
 };
 
+const checkpatientinfo = async (req, res) => {
+  try {
+    const { first_name, last_name, mobile_no } = req.body;
+    phid = await generatePHID();
+
+    const ispatientExist = await Patient.findOne({
+      where: { first_name, last_name, mobile_no },
+    });
+
+    if (ispatientExist) {
+      res.status(200).send({
+        status: true,
+        patientExist: 2,
+        message: "Patient already Exist",
+        data: ispatientExist,
+      });
+    } else {
+      res.status(200).send({
+        status: true,
+        patientExist: 1,
+        message: "Patient Create successfully",
+        data: ispatientExist,
+      });
+    }
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 const storepatient = async (req, res) => {
   try {
     const {
@@ -205,9 +234,7 @@ const storepatient = async (req, res) => {
       plan,
       advise,
     } = req.body;
-
-    // Ensure documents is an array by parsing
-    const documents = JSON.parse(req.body.documents || "[]");
+    const files = req.files;
 
     // Check if patient exists
     let patient = await Patient.findOne({ where: { mobile_no } });
@@ -272,60 +299,36 @@ const storepatient = async (req, res) => {
       advise,
     });
 
-    // Handle file uploads
-    if (req.files && req.files.length > 0) {
-      if (req.files.length !== documents.length) {
-        return res.status(400).json({
-          status: false,
-          message: "Mismatch between uploaded files and document metadata.",
-        });
-      }
+    const docTypes = {
+      blood_report: 1,
+      xray_report: 2,
+      ecg_report: 3,
+      ct_scan_report: 4,
+      echocardiagram_report: 5,
+      misc_report: 6,
+    };
 
-      for (let i = 0; i < req.files.length; i++) {
-        const file = req.files[i];
-        const docInfo = documents[i];
-
-        // Ensure document type exists
-        if (!docInfo?.document_type) {
-          return res
-            .status(400)
-            .json({ status: false, message: "Invalid document type." });
+    //file store
+    for (const [key, fileArray] of Object.entries(files)) {
+      if (docTypes[key]) {
+        for (const file of fileArray) {
+          const mediaPath = file.path.replace(/\\/g, "/");
+          const query = `INSERT INTO patient_docs (patient_id, visit_id, doc_type_id, media_path) VALUES ($1, $2, $3, $4)`;
+          await db.query(query, [
+            patient.id,
+            newVisit.id,
+            docTypes[key],
+            mediaPath,
+          ]);
         }
-
-        // Define folder path based on document type
-        const folderName = documentFolders[docInfo.document_type] || "others";
-        const folderPath = `./public/uploads/${folderName}`;
-
-        // Ensure folder exists
-        await fs.promises.mkdir(folderPath, { recursive: true });
-
-        // Generate unique file name
-        const fileExtension = extname(file.originalname);
-        const timestamp = Date.now();
-        const serialNumber = Math.floor(1000 + Math.random() * 9000);
-        const newFileName = `${phid}_${timestamp}_${docInfo.document_type
-          .replace(/\s+/g, "_")
-          .toLowerCase()}_${serialNumber}${fileExtension}`;
-        const newFilePath = `${folderPath}/${newFileName}`;
-
-        // Move file to storage
-        fs.renameSync(file.path, newFilePath);
-
-        // Store document info in DB
-        await PatientDocument.create({
-          patient_id: patient.id,
-          document_type: docInfo.document_type,
-          file_url: newFilePath.replace("./public", ""),
-          created_by: req.user?.id || null, // Handle undefined user ID
-        });
       }
     }
 
     res.json({
       status: true,
       message: "Patient, first visit, and documents added successfully",
-      patient,
-      visit: newVisit,
+      // patient,
+      // visit: newVisit,
     });
   } catch (error) {
     console.error(error);
@@ -408,4 +411,5 @@ export {
   storepatient,
   getPatientById,
   getAllPatients,
+  checkpatientinfo,
 };
