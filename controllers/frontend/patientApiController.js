@@ -256,6 +256,7 @@ const storepatient = async (req, res) => {
         referral_by,
         location,
         doctor_note,
+        created_by: req.user.id,
       });
     } else {
       patient = await Patient.update(
@@ -270,6 +271,7 @@ const storepatient = async (req, res) => {
           referral_by: referral_by,
           location: location,
           doctor_note: doctor_note,
+          updated_by: req.user.id,
         },
         { where: { id: patientId } }
       );
@@ -331,6 +333,7 @@ const storepatient = async (req, res) => {
       comorbidities,
       plan,
       advise,
+      created_by: req.user.id,
     });
 
     const docTypes = {
@@ -351,13 +354,14 @@ const storepatient = async (req, res) => {
       if (docTypes[key]) {
         for (const file of fileArray) {
           const mediaPath = file.path.replace(/\\/g, "/");
-          const query = `INSERT INTO patient_docs (patient_id, visit_id, doc_type_id, media_path) VALUES ($1, $2, $3, $4)`;
+          const query = `INSERT INTO patient_docs (patient_id, visit_id, doc_type_id, media_path,created_by) VALUES ($1, $2, $3, $4,$5)`;
           const checknewOroldpatientId = status == 1 ? patient.id : patientId;
           await db.query(query, [
             checknewOroldpatientId,
             newVisit.id,
             docTypes[key],
             mediaPath,
+            req.user.id,
           ]);
         }
       }
@@ -469,7 +473,7 @@ const getAllPatients = async (req, res) => {
     // });
 
     const patients = await db.query(
-      "select p.id,p.first_name,p.last_name,p.gender,p.mobile_no,p.date,pv.age from patients as p LEFT JOIN patient_visits as pv ON pv.patient_id=p.id where p.status=$1 AND pv.status=$2 order by p.id desc",
+      "select p.id,p.first_name,p.last_name,p.gender,p.mobile_no,p.date,pv.age,p.phid from patients as p LEFT JOIN patient_visits as pv ON pv.patient_id=p.id where p.status=$1 AND pv.status=$2 order by p.id desc",
       ["1", "1"]
     );
 

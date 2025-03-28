@@ -4,7 +4,7 @@ import { extname } from "path";
 import path from "path";
 import { Router } from "express";
 import sharp from "sharp"; // For image compression
-import authenticate from "../middlewares/authenticate.js";
+import user_authenticate from "../middlewares/user_authenticate.js";
 import { file_storage } from "../middlewares/upload.js";
 import * as userController from "../controllers/frontend/userApiController.js";
 import * as patientController from "../controllers/frontend/patientApiController.js";
@@ -63,6 +63,7 @@ router.post("/checkpatientinfo", patientController.checkpatientinfo);
 
 router.post(
   "/storepatient",
+  user_authenticate,
   patient_visitsimageupload.fields([
     { name: "pa_abdomen_image", maxCount: 20 },
     { name: "pr_rectum_image", maxCount: 20 },
