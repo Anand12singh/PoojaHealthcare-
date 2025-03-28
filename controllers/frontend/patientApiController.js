@@ -159,17 +159,20 @@ const storepatient = async (req, res) => {
       date,
       referral_by,
       location,
-      timestamp,
       age,
       height,
       weight,
       bmi,
       rbs,
       chief_complaints,
-      dm,
-      dm_since,
-      hypertension,
-      htn_since,
+      history_of_dm_status,
+      history_of_dm_description,
+      hypertension_status,
+      hypertension_description,
+      IHD_status,
+      IHD_description,
+      COPD_status,
+      COPD_description,
       any_other_illness,
       past_surgical_history,
       drug_allergy,
@@ -179,30 +182,31 @@ const storepatient = async (req, res) => {
       bp_diastolic,
       pallor,
       icterus,
-      oedema,
-      oedema_text,
+      oedema_status,
+      oedema_description,
       lymphadenopathy,
-      present_medication,
-      rs,
-      cvs,
-      cns,
-      pa,
-      pa_image,
-      pr,
-      pr_image1,
-      pr_image2,
+      HO_present_medication,
+      respiratory_system,
+      cardio_vascular_system,
+      central_nervous_system,
+      pa_abdomen,
+      pr_rectum,
+      doctor_note,
       local_examination,
       clinical_diagnosis,
       comorbidities,
       plan,
       advise,
+      patientId,
+      status,
     } = req.body;
     const files = req.files;
 
     // Check if patient exists
     let patient = await Patient.findOne({ where: { mobile_no } });
     let phid;
-    if (!patient) {
+    //check status is 1 means store patient data and 2 means update patient data
+    if (status == 1) {
       phid = await generatePHID();
       patient = await Patient.create({
         phid,
@@ -215,25 +219,49 @@ const storepatient = async (req, res) => {
         date,
         referral_by,
         location,
+        doctor_note
       });
-    } else {
-      phid = patient.phid;
+    }else{
+      patient = await Patient.update({
+        first_name:first_name,
+        last_name:last_name,
+        gender:gender,
+        mobile_no:mobile_no,
+        alternative_no:alternative_no,
+        address:address,
+        date:date,
+        referral_by:referral_by,
+        location:location,
+        doctor_note:doctor_note
+      }, {where: {id:patientId}});
     }
-    const timestamp1 = moment(timestamp).format("YYYY-MM-DD HH:mm:ssZ");
+    let result = 'added';
+    if(status == 2){
+      result = 'update';
+      //update pervoius patient visit info - status set as 2 and new records update as status 1
+      const updatePatientVisit = await db.query(`update patient_visits SET status =$1 where  patient_id = $2`,['0',patientId])
+      //also update patient_docs table - patient pervious image status set as 2
+      const updatePatientDocs = await db.query(`update patient_docs SET status = $1 where  patient_id = $2`, ['0',patientId])
+    }
+    //const timestamp1 = moment(timestamp).format("YYYY-MM-DD HH:mm:ssZ");
     // Store new visit
     const newVisit = await PatientVisit.create({
-      patient_id: patient.id,
-      timestamp: timestamp1,
+      patient_id: (status == 1) ? patient.id : patientId,
+      //timestamp: timestamp1,
       age,
       height,
       weight,
       bmi,
       rbs,
       chief_complaints,
-      dm,
-      dm_since,
-      hypertension,
-      htn_since,
+      history_of_dm_status,
+      history_of_dm_description,
+      hypertension_status,
+      hypertension_description,
+      IHD_status,
+      IHD_description,
+      COPD_status,
+      COPD_description,
       any_other_illness,
       past_surgical_history,
       drug_allergy,
@@ -243,18 +271,16 @@ const storepatient = async (req, res) => {
       bp_diastolic,
       pallor,
       icterus,
-      oedema,
-      oedema_text,
       lymphadenopathy,
-      present_medication,
-      rs,
-      cvs,
-      cns,
-      pa,
-      pa_image,
-      pr,
-      pr_image1,
-      pr_image2,
+      oedema_status,
+      oedema_description,
+      lymphadenopathy,
+      HO_present_medication,
+      respiratory_system,
+      cardio_vascular_system,
+      central_nervous_system,
+      pa_abdomen,
+      pr_rectum,
       local_examination,
       clinical_diagnosis,
       comorbidities,
@@ -269,6 +295,10 @@ const storepatient = async (req, res) => {
     ct_scan_report: 4,
     echocardiagram_report: 5,
     misc_report: 6,
+    pr_image:7,
+    pa_abdomen_image:8,
+    pr_rectum_image:9,
+    doctor_note_image:10
   };
 
     //file store
@@ -277,14 +307,15 @@ const storepatient = async (req, res) => {
       for (const file of fileArray) {
         const mediaPath = file.path.replace(/\\/g, '/');
         const query = `INSERT INTO patient_docs (patient_id, visit_id, doc_type_id, media_path) VALUES ($1, $2, $3, $4)`;
-          await db.query(query, [patient.id, newVisit.id, docTypes[key], mediaPath]);
+        const checknewOroldpatientId = (status == 1) ? patient.id : patientId;
+          await db.query(query, [checknewOroldpatientId, newVisit.id, docTypes[key], mediaPath]);
       }
     }
   }
 
     res.json({
       status: true,
-      message: "Patient, first visit, and documents added successfully",
+      message: `Patient, first visit, and documents ${result} successfully`,
       // patient,
       // visit: newVisit,
     });

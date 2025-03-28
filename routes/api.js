@@ -16,13 +16,8 @@ const patient_visitsimage = diskStorage({
   destination: function (req, file, cb) {
     let uploadPath;
 
-    if (file.fieldname === "pa_image") {
+    if (file.fieldname === "pa_abdomen_image") {
       uploadPath = "./public/uploads/p_a_abdomen";
-    } else if (
-      file.fieldname === "pr_image1" ||
-      file.fieldname === "pr_image2"
-    ) {
-      uploadPath = "./public/uploads/pr_image";
     } else if(file.fieldname === 'blood_report'){
       uploadPath = './public/uploads/blood_report';
     } else if(file.fieldname === 'xray_report'){
@@ -35,6 +30,10 @@ const patient_visitsimage = diskStorage({
       uploadPath = './public/uploads/echocardiagram_report';
     } else if(file.fieldname === 'misc_report'){
       uploadPath = './public/uploads/misc_report';
+    }else if(file.fieldname === 'pr_rectum_image'){
+      uploadPath = './public/uploads/pr_rectum_image';
+    }else if(file.fieldname === 'doctor_note_image'){
+      uploadPath = './public/uploads/doctor_note_image';
     }else {
       return cb(new Error("Invalid fieldname"), null);
     }
@@ -62,15 +61,15 @@ router.get("/getAllDocumentTypes", patientController.getAllDocumentTypes);
 router.post(
   "/storepatient",
   patient_visitsimageupload.fields([
-    { name: "pa_image", maxCount: 1 },
-    { name: "pr_image1", maxCount: 1 },
-    { name: "pr_image2", maxCount: 1 },
+    { name: "pa_abdomen_image", maxCount: 20 },
+    { name: "pr_rectum_image", maxCount: 20 },
     { name: "blood_report", maxCount: 20 },
     { name: "xray_report", maxCount: 20 },
     { name: "ct_scan_report", maxCount: 20 },
     { name: "ecg_report", maxCount: 20 },
     { name: "echocardiagram_report", maxCount: 20 },
     { name: "misc_report", maxCount: 20 },
+    { name: "doctor_note_image", maxCount: 20 }
   ]),
   patientController.storepatient
 );
