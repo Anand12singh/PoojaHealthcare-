@@ -16,6 +16,7 @@ import fs from "fs";
 import { extname } from "path";
 import moment from "moment";
 // import DocumentTypes from "../../db/models/document_types.js";
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3847';
 
 import jwt from "jsonwebtoken";
 
@@ -205,6 +206,7 @@ const storepatient = async (req, res) => {
     // Check if patient exists
     let patient = await Patient.findOne({ where: { mobile_no } });
     let phid;
+
     //check status is 1 means store patient data and 2 means update patient data
     if (status == 1) {
       phid = await generatePHID();
@@ -212,26 +214,26 @@ const storepatient = async (req, res) => {
         phid,
         first_name,
         last_name,
-        gender,
+        gender:(gender) ? gender : null,
         mobile_no,
         alternative_no,
         address,
         date,
         referral_by,
-        location,
+        location:(location) ? location : null,
         doctor_note
       });
     }else{
       patient = await Patient.update({
         first_name:first_name,
         last_name:last_name,
-        gender:gender,
+        gender:(gender) ? gender : null,
         mobile_no:mobile_no,
         alternative_no:alternative_no,
         address:address,
         date:date,
         referral_by:referral_by,
-        location:location,
+        location:(location) ? location : null,
         doctor_note:doctor_note
       }, {where: {id:patientId}});
     }
@@ -248,31 +250,31 @@ const storepatient = async (req, res) => {
     const newVisit = await PatientVisit.create({
       patient_id: (status == 1) ? patient.id : patientId,
       //timestamp: timestamp1,
-      age,
+      age:(age) ? age : null,
       height,
       weight,
       bmi,
-      rbs,
+      rbs:(rbs) ? rbs : null,
       chief_complaints,
-      history_of_dm_status,
+      history_of_dm_status:(history_of_dm_status) ? history_of_dm_status : null,
       history_of_dm_description,
-      hypertension_status,
+      hypertension_status:(hypertension_status) ? hypertension_status : null,
       hypertension_description,
-      IHD_status,
+      IHD_status:(IHD_status) ? IHD_status : null,
       IHD_description,
-      COPD_status,
+      COPD_status:(COPD_status) ? COPD_status : null,
       COPD_description,
       any_other_illness,
       past_surgical_history,
       drug_allergy,
-      temp,
-      pulse,
-      bp_systolic,
-      bp_diastolic,
-      pallor,
-      icterus,
+      temp:(temp) ? temp : null,
+      pulse:(pulse) ? pulse : null,
+      bp_systolic:(bp_systolic) ? bp_systolic : null,
+      bp_diastolic:(bp_diastolic) ? bp_diastolic : null,
+      pallor:(pallor) ? pallor : null,
+      icterus:(icterus) ? icterus : null,
       lymphadenopathy,
-      oedema_status,
+      oedema_status:(oedema_status) ? oedema_status : null,
       oedema_description,
       lymphadenopathy,
       HO_present_medication,
@@ -325,10 +327,70 @@ const storepatient = async (req, res) => {
   }
 };
 
+const getPatientById = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const patientInfo = await db.query(`select id,phid,first_name,last_name,gender,mobile_no,alternative_no,description,address,date,referral_by,
+      location,doctor_note from patients where id = $1 and status = $2`,[1,"1"]);
+    let PatientVisitInfo;
+    let PatientDocumentInfo;
+    if(patientInfo.rowCount > 0){
+       PatientVisitInfo = await db.query(`select id,patient_id,age,height,weight,rbi,bmi,rbs,chief_complaints,history_of_dm_status,history_of_dm_description,hypertension_status,
+        hypertension_description,"IHD_status","IHD_description","COPD_status","COPD_description",any_other_illness,past_surgical_history,
+        drug_allergy,temp,pulse,bp_systolic,bp_diastolic,pallor,icterus,oedema_status,oedema_description,lymphadenopathy,"HO_present_medication",
+        respiratory_system,cardio_vascular_system,central_nervous_system,pa_abdomen,pa_abdomen_image,pr_rectum,
+        pr_rectum_image,local_examination,clinical_diagnosis,comorbidities,plan,advise from patient_visits where patient_id = $1 and status = $2`,[patientInfo.rows[0].id,"1"]);
+       PatientDocumentInfo = await db.query(`select id,patient_id,visit_id,doc_type_id,media_path from patient_docs where patient_id = $1 and status = $2`,[patientInfo.rows[0].id,"1"]);
+    }
+
+    let groupedDocuments;
+    if (PatientDocumentInfo.rowCount > 0) {
+      // Map document data with media URLs
+      const documentData = PatientDocumentInfo.rows.map(doc => ({
+          id: doc.id,
+          patient_id: doc.patient_id,
+          visit_id: doc.visit_id,
+          doc_type_id: doc.doc_type_id,
+          media_url: `${BASE_URL}/${doc.media_path.replace('public/', '')}`
+      }));
+
+       groupedDocuments = documentData.reduce((result, doc) => {
+          if (!result[doc.doc_type_id]) {
+              result[doc.doc_type_id] = [];
+          }
+          result[doc.doc_type_id].push(doc);
+          return result;
+      }, {});
+  }else{
+     groupedDocuments = []
+  }
+
+
+    if (patientInfo.rowCount == 0) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Patient not found" });
+    }
+
+    res.json({
+      status: true,
+      message: "Patient  found",
+      data: [{ patient: patientInfo.rows, PatientVisitInfo:(PatientVisitInfo) ? PatientVisitInfo.rows : [],PatientDocumentInfo:groupedDocuments }],
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ status: false, message: "Server error", error: error.message });
+  }
+};
+
 export {
   addLocation,
   getAllLocations,
   addDocumentType,
   getAllDocumentTypes,
   storepatient,
+  getPatientById
 };

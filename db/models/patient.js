@@ -16,7 +16,6 @@ const Patient = sequelize.define(
     date: { type: DataTypes.DATE },
     referral_by: { type: DataTypes.STRING },
     location: { type: DataTypes.INTEGER }, // Location code/map
-
     status: {
       type: DataTypes.ENUM("0", "1"),
       defaultValue: "1",

@@ -75,5 +75,5 @@ router.post(
 );
 
 router.post("/add_document_type", patientController.addDocumentType);
-
+router.post("/getpatientbyid", patientController.getPatientById);
 export default router;
