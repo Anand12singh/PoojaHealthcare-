@@ -1,6 +1,8 @@
 // models/patient.js
 import { DataTypes } from "sequelize";
 import sequelize from "../../config/database.js";
+import PatientVisit from "./patient_visits.js";
+import PatientDocument from "./patient_docs.js";
 
 const Patient = sequelize.define(
   "patient",
@@ -16,6 +18,7 @@ const Patient = sequelize.define(
     date: { type: DataTypes.DATE },
     referral_by: { type: DataTypes.STRING },
     location: { type: DataTypes.INTEGER }, // Location code/map
+    doctor_note:{type:DataTypes.TEXT},
     status: {
       type: DataTypes.ENUM("0", "1"),
       defaultValue: "1",
@@ -47,5 +50,13 @@ const Patient = sequelize.define(
     modelName: "patient",
   }
 );
+Patient.hasMany(PatientVisit, {
+  foreignKey: "patient_id",
+  as: "patient_visits",
+});
+Patient.hasMany(PatientDocument, {
+  foreignKey: "patient_id",
+  as: "patient_documents",
+});
 
 export default Patient;
