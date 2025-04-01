@@ -148,8 +148,9 @@ async function generatePHID() {
 
 const checkpatientinfo = async (req, res) => {
   try {
-    const { first_name, last_name, mobile_no } = req.body;
-
+    const { mobile_no } = req.body;
+    let first_name = req.body.first_name.toLowerCase();
+    let last_name = req.body.last_name.toLowerCase();
     const ispatientExist = await Patient.findOne({
       where: { first_name, last_name, mobile_no },
     });
@@ -235,6 +236,7 @@ const storepatient = async (req, res) => {
       advise,
       patientId,
       status,
+      existing_file
     } = req.body;
     const files = req.files;
 
@@ -285,13 +287,6 @@ const storepatient = async (req, res) => {
         `update patient_visits SET status =$1 where  patient_id = $2`,
         ["0", patientId]
       );
-
-
-      //also update patient_docs table - patient pervious image status set as 2
-      // const updatePatientDocs = await db.query(
-      //   `update patient_docs SET status = $1 where  patient_id = $2`,
-      //   ["0", patientId]
-      // );
     }
     //const timestamp1 = moment(timestamp).format("YYYY-MM-DD HH:mm:ssZ");
     // Store new visit
@@ -340,13 +335,16 @@ const storepatient = async (req, res) => {
     });
 
 
-    if (status == 2 && (!files || files.length === 0)) {
+    if (status == 2) {
       // Get previous patient visit docs
       const previousPatientVisitId = newVisit.id - 1;
+      const ids = existing_file.split(',');
+      const placeholders = ids.map((_, index) => `$${index + 3}`).join(", ");
       const getPreviousDocsInfo = await db.query(
-          `SELECT * FROM patient_docs WHERE patient_id = $1 AND visit_id = $2 AND status = $3`,
-          [patientId, previousPatientVisitId, "1"]
+          `SELECT * FROM patient_docs WHERE patient_id = $1 AND visit_id = $2 AND id IN (${placeholders})`,
+          [patientId, previousPatientVisitId, ...ids]
       );
+
 
       // Insert previous docs into `patient_docs`
       if (getPreviousDocsInfo.rows.length > 0) {
@@ -414,7 +412,9 @@ const getPatientById = async (req, res) => {
     const { id } = req.body;
 
     const patientInfo = await db.query(
-      `select id,phid,first_name,last_name,gender,mobile_no,alternative_no,description,address,date,referral_by,
+      `select id,phid,
+      CONCAT(UPPER(LEFT(first_name, 1)), LOWER(SUBSTRING(first_name, 2))) AS first_name,
+       CONCAT(UPPER(LEFT(last_name, 1)), LOWER(SUBSTRING(last_name, 2))) AS last_name,gender,mobile_no,alternative_no,description,address,date,referral_by,
       location,doctor_note from patients where id = $1 and status = $2`,
       [id, "1"]
     );
@@ -486,7 +486,9 @@ const getAllPatients = async (req, res) => {
   try {
 
     const patients = await db.query(
-      "select p.id,p.first_name,p.last_name,p.gender,p.mobile_no,p.date,pv.age,p.phid,l.location from patients as p LEFT JOIN patient_visits as pv ON pv.patient_id=p.id LEFT JOIN locations AS l ON p.location =l.id where p.status=$1 AND pv.status=$2 order by p.id desc",
+      `select p.id,
+      CONCAT(UPPER(LEFT(p.first_name, 1)), LOWER(SUBSTRING(p.first_name, 2))) AS first_name,
+       CONCAT(UPPER(LEFT(p.last_name, 1)), LOWER(SUBSTRING(p.last_name, 2))) AS last_name,p.gender,p.mobile_no,p.date,pv.age,p.phid,l.location from patients as p LEFT JOIN patient_visits as pv ON pv.patient_id=p.id LEFT JOIN locations AS l ON p.location =l.id where p.status=$1 AND pv.status=$2 order by p.id desc`,
       ["1", "1"]
     );
 
