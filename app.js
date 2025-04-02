@@ -17,7 +17,7 @@ import session, { Store } from "express-session";
 import connectSessionSequelize from "connect-session-sequelize";
 const SequelizeStore = connectSessionSequelize(Store);
 import sequelize from "./config/database.js"; // Sequelize instance
-
+import cors from 'cors'
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
@@ -46,7 +46,7 @@ import AppError from "./utils/appError.js";
 import globalErrorHandler from "./controllers/errorController.js";
 import passport from "passport";
 
-
+app.use(cors())
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "Jnsdf83452Njsdfbsdbf", // You should store this in .env
@@ -75,9 +75,26 @@ app.set("view engine", "ejs");
 
 // Use express-ejs-layouts
 app.use(expressLayouts);
-app.use("/", front);
-app.use("/admin", admin);
+// app.use("/", front);
+// app.use("/admin", admin);
+
+
+
+
 app.use("/api", api);
+
+app.use(express.static(join(__dirname, "views/flutterWeb"), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader("Content-Type", "application/javascript");
+    }
+  }
+}));
+
+// // Serve Flutter Web's index.html directly
+app.get("*", (req, res) => {
+  res.sendFile(join(__dirname, "views/flutterWeb/index.html"));
+});
 
 app.locals.baseUrl = APP_URL + ":" + PORT;
 
@@ -118,6 +135,6 @@ process.on("unhandledRejection", (reason, promise) => {
   // Optionally handle rejection
 });
 
-app.listen(3001, () => {
-  console.log("Server Running on " + APP_URL + ":" + 3001);
+app.listen(PORT, () => {
+  console.log("Server Running on " + APP_URL + ":" + PORT);
 });

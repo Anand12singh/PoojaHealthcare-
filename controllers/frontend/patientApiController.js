@@ -58,7 +58,7 @@ const getAllLocations = async (req, res) => {
   try {
     const locations = await Location.findAll({
       attributes: ["id", "location", "status"], // Select required fields
-      order: [["location", "ASC"]], // Sort alphabetically
+      order: [["id", "ASC"]], // Sort alphabetically
     });
 
     res.status(200).json({
@@ -338,22 +338,25 @@ const storepatient = async (req, res) => {
     if (status == 2) {
       // Get previous patient visit docs
       const previousPatientVisitId = newVisit.id - 1;
-      const ids = existing_file.split(',');
-      const placeholders = ids.map((_, index) => `$${index + 3}`).join(", ");
-      const getPreviousDocsInfo = await db.query(
-          `SELECT * FROM patient_docs WHERE patient_id = $1 AND visit_id = $2 AND id IN (${placeholders})`,
-          [patientId, previousPatientVisitId, ...ids]
-      );
+      if(existing_file)
+      {
+        const ids = existing_file.split(',');
+        const placeholders = ids.map((_, index) => `$${index + 3}`).join(", ");
+        const getPreviousDocsInfo = await db.query(
+            `SELECT * FROM patient_docs WHERE patient_id = $1 AND visit_id = $2 AND id IN (${placeholders})`,
+            [patientId, previousPatientVisitId, ...ids]
+        );
 
 
-      // Insert previous docs into `patient_docs`
-      if (getPreviousDocsInfo.rows.length > 0) {
-          for (const doc of getPreviousDocsInfo.rows) {
-              await db.query(
-                  `INSERT INTO patient_docs (patient_id, visit_id, doc_type_id, media_path, status) VALUES ($1, $2, $3, $4, $5)`,
-                  [patientId, newVisit.id, doc.doc_type_id, doc.media_path, "1"]
-              );
-          }
+        // Insert previous docs into `patient_docs`
+        if (getPreviousDocsInfo.rows.length > 0) {
+            for (const doc of getPreviousDocsInfo.rows) {
+                await db.query(
+                    `INSERT INTO patient_docs (patient_id, visit_id, doc_type_id, media_path, status) VALUES ($1, $2, $3, $4, $5)`,
+                    [patientId, newVisit.id, doc.doc_type_id, doc.media_path, "1"]
+                );
+            }
+        }
       }
 
       // Update previous patient docs status to 2
@@ -378,6 +381,7 @@ const storepatient = async (req, res) => {
     };
 
     //file store
+    if(files){
     for (const [key, fileArray] of Object.entries(files)) {
       if (docTypes[key]) {
         for (const file of fileArray) {
@@ -394,6 +398,7 @@ const storepatient = async (req, res) => {
         }
       }
     }
+  }
 
     res.json({
       status: true,
